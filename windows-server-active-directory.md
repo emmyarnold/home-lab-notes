@@ -1,6 +1,7 @@
 # Windows Server 2025 & Active Directory
 
 **Date:** June 21, 2026
+
 **Goal:** Build a Windows Server domain controller and practice core Active Directory admin tasks — creating an OU, a user, a group, and resetting a password.
 
 ### What I did
@@ -17,7 +18,7 @@
 - VM specs: 4096 MB RAM, 2 CPUs, 60 GB dynamic virtual disk
 
 ### What I ran into
-- **Routine resizing issues--guest screen too small. Installed guest additions and scaled virtual screen to 200%.
+- **Routine resizing issue — guest screen too small.** Installed Guest Additions and scaled the virtual screen to 200%.
 - **Mouse would move but clicks stopped registering inside the Server VM.** Graphics Controller had ended up set to VBoxSVGA instead of VMSVGA. Switching it to VMSVGA fixed it; not sure how it got set to VBoxSVGA in the first place.
 
 ### What I learned
