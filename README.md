@@ -33,11 +33,10 @@ timedatectl set-timezone America/Chicago           # set the system timezone
 ```
 
 ### What I ran into
-- **Small VM window stuck at low resolution.** The guest OS launched at a low default resolution and wouldn't fill the screen even in full-screen mode, because the proper display drivers weren't installed yet. I installed VirtualBox Guest Additions (`virtualbox-guest-utils` and `virtualbox-guest-x11`) to try to fix this — it made the window marginally larger but never gave true auto-resize, and it introduced stability problems (see below). I ended up removing the graphics driver and living with a fixed-size window, using full-screen mode for a usable workspace. **Net result: the resizing issue was never fully solved. I traded it temporarily away for stability.**
+- **Small VM window stuck at low resolution.** The guest OS launched at a low default resolution and wouldn't fill the screen even in full-screen mode, because the proper display drivers weren't installed yet. I installed VirtualBox Guest Additions (`virtualbox-guest-utils` and `virtualbox-guest-x11`) to fix this and set virtual screen to scale to 200%.
 - **VM froze at the login screen after the Guest Additions reboot.** VM froze at the login screen after the Guest Additions reboot. After installing Guest Additions and rebooting, the VM hung on the login screen and wouldn't respond. Resolved by powering the VM off and restarting it from VirtualBox; on the next boot it reached the login screen normally.
 - **System clock showing the wrong time.** Noticed the VM's clock was off because the timezone wasn't set during install. Corrected it from the terminal with `timedatectl set-timezone America/Chicago` (Central time), and the clock updated to the correct local time.
 
-> Verified the problem driver was actually removed (not just assumed) using `apt list --installed | grep virtualbox-guest-x11` — an empty result confirmed it was gone.
 
 ### What I learned
 - What a hypervisor does and how a VM isolates a guest OS from the host.
@@ -64,7 +63,7 @@ First terminal commands
 ---
 
 ## Next up
-- [ ] Add a Windows 10 VM (helpdesk-relevant OS practice)
+- [X] Add a Windows 10 VM (helpdesk-relevant OS practice)
 - [ ] Install osTicket (helpdesk ticketing system) and document the setup
-- [ ] Set up Active Directory — users, groups, password resets
+- [X] Set up Active Directory — users, groups, password resets
 - [ ] Explore Cisco Packet Tracer for basic networking
