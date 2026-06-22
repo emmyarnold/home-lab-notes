@@ -27,7 +27,7 @@ timedatectl set-timezone America/Chicago           # set the system timezone
 
 ### What I ran into
 - **Small VM window stuck at low resolution.** The guest OS launched at a low default resolution and wouldn't fill the screen even in full-screen mode, because the proper display drivers weren't installed yet. I installed VirtualBox Guest Additions (`virtualbox-guest-utils` and `virtualbox-guest-x11`) to fix this and set virtual screen to scale to 200%.
-- **VM froze at the login screen after the Guest Additions reboot.** VM froze at the login screen after the Guest Additions reboot. After installing Guest Additions and rebooting, the VM hung on the login screen and wouldn't respond. Resolved by powering the VM off and restarting it from VirtualBox; on the next boot it reached the login screen normally.
+- **VM froze at the login screen after the Guest Additions reboot.** After installing Guest Additions and rebooting, the VM hung on the login screen and wouldn't respond. Resolved by powering the VM off and restarting it from VirtualBox; on the next boot it reached the login screen normally.
 - **System clock showing the wrong time.** Noticed the VM's clock was off because the timezone wasn't set during install. Corrected it from the terminal with `timedatectl set-timezone America/Chicago` (Central time), and the clock updated to the correct local time.
 
 ### What I learned
