@@ -41,12 +41,12 @@ timedatectl set-timezone America/Chicago           # set the system timezone
 ### Screenshots
 VirtualBox with the Ubuntu VM
 
-<img width="2048" height="1280" alt="Screenshot 2026-06-11 at 11 05 26 AM" src="https://github.com/user-attachments/assets/26479ab1-60ed-40fe-8fa0-5c2408af529f" />
+![VirtualBox with the Ubuntu VM](screenshots/virtualbox-ubuntu-vm.png)
 
 Ubuntu desktop running
 
-<img width="1447" height="996" alt="Screenshot 2026-06-11 at 12 04 11 PM" src="https://github.com/user-attachments/assets/29440945-4217-4062-b9b0-c7954fd7834d" />
+![Ubuntu desktop running](screenshots/ubuntu-desktop.png)
 
 First terminal commands
 
-<img width="630" height="450" alt="Screenshot 2026-06-11 at 12 27 48 PM" src="https://github.com/user-attachments/assets/4b851414-824e-40ca-8ba7-65e4e8e935d4" />
+![First terminal commands](screenshots/first-terminal-commands.png)
