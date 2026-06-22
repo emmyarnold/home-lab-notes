@@ -1,6 +1,7 @@
 # Virtualization: VirtualBox + Ubuntu Linux VM
 
 **Date:** June 11, 2026
+
 **Goal:** Set up a virtualization environment and run my first virtual machine, to practice OS installation and get comfortable on the Linux command line.
 
 ### What I did
