@@ -1,4 +1,4 @@
-## Ubuntu Linux Client Joined to the Windows AD Domain
+# Ubuntu Linux Client Joined to the Windows AD Domain
 
 **Date:** June 22, 2026
 **Goal:** Join my existing Ubuntu-Lab VM to the `lab.local` Active Directory domain (hosted on Server-Lab), then log in as a domain user and confirm AD group membership resolves on a Linux client.
