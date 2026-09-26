@@ -80,7 +80,7 @@ Checked it with `resolvectl status` — Link 2 (`enp0s3`) now shows `DNS Domain:
 
 ![id jdoe domain user](screenshots/ubuntu-id-jdoe-domain-user.png)
 
-Ubuntu resolving a Windows AD user through Kerberos with the correct groups — that's the full chain working.
+Ubuntu resolving a Windows AD user through Kerberos with the correct groups.
 
 ### Screenshots
 - `server-lab-autoconfig-ip.png` — Server-Lab stuck on link-local before fix
