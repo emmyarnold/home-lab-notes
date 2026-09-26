@@ -1,15 +1,15 @@
 ## Project 03 — Ubuntu Linux Client Joined to the Windows AD Domain
 
 **Date:** June 22, 2026
-**Goal:** Join my existing Ubuntu-Lab VM to the `lab.local` Active Directory domain (hosted on Server-Lab) so I could log in with a domain user and see AD group membership resolve on a Linux client.
+**Goal:** Join my existing Ubuntu-Lab VM to the `lab.local` Active Directory domain (hosted on Server-Lab), then log in as a domain user and confirm AD group membership resolves on a Linux client.
 
 ### What I did
-- Moved both Server-Lab (Windows Server 2025 DC) and Ubuntu-Lab from separate NAT adapters to a shared NAT Network so they could see each other.
-- Gave Server-Lab a static IP (`10.0.2.4`) — standard practice for a domain controller, since AD-joined clients need to know exactly where DNS lives.
+- Moved both Server-Lab (Windows Server 2025 DC) and Ubuntu-Lab off their separate NAT adapters onto a shared NAT Network so they could see each other.
+- Gave Server-Lab a static IP (`10.0.2.4`). A DC needs one, since AD clients depend on it for DNS.
 - Pointed Ubuntu-Lab's DNS at `10.0.2.4` so it would resolve `lab.local` through the DC.
 - Installed the join tools on Ubuntu (`realmd`, `sssd`, `sssd-tools`, `libnss-sss`, `libpam-sss`, `adcli`, `packagekit`).
-- Ran `sudo realm join lab.local -U Administrator` and confirmed with `realm list`.
-- Verified end-to-end by running `id jdoe@lab.local` and seeing the domain user's UID, primary group (`domain users`), and custom group (`it staff`) come back correctly.
+- Ran `sudo realm join lab.local -U Administrator` and checked it with `realm list`.
+- Confirmed the whole thing by running `id jdoe@lab.local` and getting back the domain user's UID, primary group (`domain users`), and custom group (`it staff`).
 
 ### Tools / environment
 - **Host:** macOS (Intel)
@@ -45,42 +45,42 @@ resolvectl status
 
 ### What I ran into
 
-- **Server-Lab was assigning itself a link-local `169.254.x.x` address** instead of pulling a real IP from NAT — a signal that DHCP wasn't working the way I expected in the mixed setup. `ipconfig /release` + `/renew` didn't help. Fixed by giving Server-Lab a **static IP (`10.0.2.4`)** via `netsh`, which is the correct call for a domain controller anyway.
+- **Server-Lab was assigning itself a link-local `169.254.x.x` address** instead of pulling a real IP from NAT, so DHCP wasn't behaving in the mixed setup. `ipconfig /release` + `/renew` didn't help. Gave Server-Lab a **static IP (`10.0.2.4`)** via `netsh`, which is what a domain controller should have anyway.
 
 ![Server-Lab autoconfig IP](screenshots/server-lab-autoconfig-ip.png)
 ![Static IP set on Server-Lab](screenshots/server-lab-static-ip-10.0.2.4.png)
 
-- **The big one: `.local` DNS routing on Ubuntu.** After pointing Ubuntu-Lab's DNS at Server-Lab, `nslookup lab.local 10.0.2.4` worked fine when I named the DNS server explicitly — but plain `nslookup lab.local` came back with `** server can't find lab.local: REFUSED`. The problem was `systemd-resolved`: by default, Ubuntu treats `.local` as reserved for mDNS (link-local multicast), so it was refusing to send `lab.local` queries to a regular DNS server at all. Fixed by adding `~lab.local` as a routing domain on the interface:
+- **`.local` DNS routing on Ubuntu.** After pointing Ubuntu-Lab's DNS at Server-Lab, `nslookup lab.local 10.0.2.4` worked when I named the DNS server explicitly, but plain `nslookup lab.local` came back with `** server can't find lab.local: REFUSED`. The culprit was `systemd-resolved`: Ubuntu treats `.local` as reserved for mDNS (link-local multicast) by default, so it wouldn't send `lab.local` queries to a regular DNS server at all. Fixed by adding `~lab.local` as a routing domain on the interface:
 
 ```bash
 sudo resolvectl domain enp0s3 ~lab.local
 ```
 
-That worked immediately, but wouldn't survive a reboot. Made it permanent by editing the actual NetworkManager connection profile, which on this system is called `netplan-enp0s3` (not the generic "Wired connection 1" — good reminder to check the real connection name with `nmcli connection show` first):
+That worked right away but wouldn't survive a reboot. To make it stick I edited the NetworkManager connection profile, which on this system is `netplan-enp0s3` rather than the generic "Wired connection 1" (worth running `nmcli connection show` to get the real name first):
 
 ```bash
 sudo nmcli connection modify "netplan-enp0s3" ipv4.dns-search "~lab.local"
 sudo nmcli connection up "netplan-enp0s3"
 ```
 
-Verified with `resolvectl status` — Link 2 (`enp0s3`) now lists `DNS Domain: ~lab.local` on its own, no manual command needed.
+Checked it with `resolvectl status` — Link 2 (`enp0s3`) now shows `DNS Domain: ~lab.local` on its own, with no manual command needed.
 
 ![DNS troubleshooting and fix](screenshots/ubuntu-dns-troubleshooting-and-fix.png)
 
-- **`nmcli` didn't recognize the default connection name.** My first attempt to modify "Wired connection 1" errored with `Error: unknown connection`. Ran `nmcli connection show` to see what it was actually called (`netplan-enp0s3`) and used that instead. Small thing but a good habit — check the real name first.
+- **`nmcli` didn't recognize the default connection name.** Trying to modify "Wired connection 1" errored with `Error: unknown connection`. Ran `nmcli connection show`, saw it was actually `netplan-enp0s3`, and used that instead.
 
 ### What I learned
-- Domain controllers need static IPs. AD clients rely on DNS pointing to the DC, so the DC can't be a moving target.
-- `systemd-resolved` is opinionated about `.local`. It treats it as mDNS-only by default, which is fine for most home networks but breaks the moment you're trying to reach a real DNS server that happens to serve a `.local` zone. The `~domain` routing syntax tells it "send queries for this domain to a normal DNS server."
-- `resolvectl` sets things for the current session; `nmcli connection modify` bakes it into the profile so it survives a reboot. Both matter.
-- When something in Linux networking references a "connection," the actual name isn't necessarily what you'd expect (`netplan-enp0s3` on a netplan-managed system, not "Wired connection 1"). Check first, don't assume.
+- Domain controllers need static IPs. AD clients rely on DNS pointing at the DC, so it can't be a moving target.
+- `systemd-resolved` is picky about `.local`. It treats it as mDNS-only by default, which is fine on a normal home network but fails the moment you need to reach a real DNS server that serves a `.local` zone. The `~domain` routing syntax tells it to send queries for that domain to a normal DNS server instead.
+- `resolvectl` changes things for the current session; `nmcli connection modify` writes it into the profile so it survives a reboot. You need both.
+- The name Linux uses for a "connection" isn't always what you'd expect (`netplan-enp0s3` on a netplan-managed system, not "Wired connection 1"), so check before assuming.
 
 ### Verification
-`id jdoe@lab.local` returned the domain user with correct UID and group membership, including the custom `it staff` group I'd created in AD:
+`id jdoe@lab.local` returned the domain user with the right UID and group membership, including the custom `it staff` group I'd made in AD:
 
 ![id jdoe domain user](screenshots/ubuntu-id-jdoe-domain-user.png)
 
-That's the end-to-end proof — Ubuntu resolving a Windows AD user through Kerberos with the correct group memberships.
+Ubuntu resolving a Windows AD user through Kerberos with the correct groups — that's the full chain working.
 
 ### Screenshots
 - `server-lab-autoconfig-ip.png` — Server-Lab stuck on link-local before fix
